@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/.idea/pr_rf-main (1).iml" filepath="$PROJECT_DIR$/.idea/pr_rf-main (1).iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/RecFac-main.iml" filepath="$PROJECT_DIR$/.idea/RecFac-main.iml" />
+>>>>>>> 43cdd905ee1e2e08c897ef9292a831942b61236b
     </modules>
   </component>
 </project>
