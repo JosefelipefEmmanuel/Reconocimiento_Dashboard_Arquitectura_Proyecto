@@ -1,0 +1,69 @@
+CREATE DATABASE reconocimiento;
+USE reconocimiento;
+
+CREATE TABLE `empresas` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `nombre` VARCHAR(255) NOT NULL,
+    `nit` VARCHAR(50) NOT NULL,
+    `telefono` VARCHAR(20) NULL DEFAULT NULL,
+    `correo` VARCHAR(255) NULL DEFAULT NULL,
+    `direccion` TEXT NULL DEFAULT NULL,
+    `comentario` TEXT NULL DEFAULT NULL,
+    `estado` ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+    `fecha_registro` DATETIME NULL,
+    `dia_de_pago` INT(2) NULL DEFAULT NULL,
+    `encargado` VARCHAR(255) NULL DEFAULT NULL,
+    `valor_de_pago` DECIMAL(10,2) NULL DEFAULT NULL,
+    PRIMARY KEY (`id`)
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=3;
+
+CREATE TABLE `tabla_usuarios` (
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`nombre` VARCHAR(50) NULL DEFAULT NULL,
+	`cedula` VARCHAR(50) NULL DEFAULT NULL,
+	`cargo` VARCHAR(50) NULL DEFAULT NULL,
+	`codigo_empresa` INT(11) NULL DEFAULT NULL,
+	`imagen` LONGBLOB NULL DEFAULT NULL,
+	PRIMARY KEY (`id`),
+	INDEX `fk_codigo_empresa` (`codigo_empresa`),
+	CONSTRAINT `fk_codigo_empresa` FOREIGN KEY (`codigo_empresa`) REFERENCES `empresas` (`id`)
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=27
+;
+
+CREATE TABLE `registro` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `usuario_id` INT(11) NULL DEFAULT NULL,
+    `empresa_id` INT(11) NULL DEFAULT NULL,
+    `hora_entrada` DATETIME NULL DEFAULT NULL,
+    `hora_salida` DATETIME NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    INDEX `usuario_id` (`usuario_id`),
+    INDEX `empresa_id` (`empresa_id`),
+    CONSTRAINT `registro_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `tabla_usuarios` (`id`),
+    CONSTRAINT `registro_ibfk_2` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`)
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=7;
+
+CREATE TABLE `usuarios` (
+    `usuario_id` INT(11) NOT NULL AUTO_INCREMENT,
+    `cedula` VARCHAR(255) NOT NULL,
+    `nombre` VARCHAR(255) NOT NULL,
+    `password` VARCHAR(255) NOT NULL,
+    `estado` VARCHAR(50) NOT NULL,
+    `empresa_id` INT(11) NULL DEFAULT NULL,
+    PRIMARY KEY (`usuario_id`),
+    UNIQUE INDEX `cedula` (`cedula`),
+    INDEX `empresa_id` (`empresa_id`),
+    CONSTRAINT `usuarios_ibfk_1` FOREIGN KEY (`empresa_id`) REFERENCES `empresas` (`id`)
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=10;

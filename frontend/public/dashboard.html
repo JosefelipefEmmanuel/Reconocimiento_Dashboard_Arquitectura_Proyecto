@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARCVAULT — Panel Administrativo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold-light: #f0d080;
+            --gold-dim: rgba(201, 168, 76, 0.12);
+            --bg: #08080a;
+            --surface: #111114;
+            --surface2: #17171b;
+            --border: rgba(201, 168, 76, 0.18);
+            --text: #e6e1d6;
+            --muted: #66635e;
+            --danger: #d95555;
+            --success: #4ec87a;
+            --warning: #e09c2f;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(201, 168, 76, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201, 168, 76, 0.03) 1px, transparent 1px);
+            background-size: 52px 52px;
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: sticky; top: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 2.5rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(8, 8, 10, 0.95);
+            backdrop-filter: blur(16px);
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 1.2rem; }
+
+        .nav-logo {
+            font-family: 'Cinzel', serif; font-weight: 900;
+            font-size: 1rem; letter-spacing: 0.22em; color: var(--gold);
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .nav-logo svg { width: 18px; height: 18px; }
+
+        .nav-divider {
+            width: 1px; height: 20px;
+            background: var(--border);
+        }
+
+        .nav-section {
+            font-family: 'Cinzel', serif; font-size: .58rem;
+            letter-spacing: .22em; color: var(--muted); text-transform: uppercase;
+        }
+
+        .nav-right { display: flex; align-items: center; gap: 1rem; }
+
+        .nav-user {
+            text-align: right;
+        }
+        .nav-user-name {
+            font-size: .78rem; color: var(--text); letter-spacing: .06em;
+            display: block;
+        }
+        .nav-user-role {
+            font-size: .6rem; letter-spacing: .14em;
+            color: var(--gold); text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--success); box-shadow: 0 0 7px var(--success);
+            animation: blink 2.2s ease-in-out infinite;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+        .btn-nav {
+            font-family: 'Cinzel', serif; font-size: .6rem;
+            letter-spacing: .18em; padding: .4rem .9rem;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--muted); cursor: pointer; border-radius: 2px;
+            transition: all .2s;
+        }
+        .btn-nav:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+        /* ── MAIN ── */
+        main {
+            position: relative; z-index: 1;
+            flex: 1; padding: 2.5rem;
+            max-width: 1200px; width: 100%; margin: 0 auto;
+            animation: riseUp .6s ease both;
+        }
+
+        @keyframes riseUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── PAGE TITLE ── */
+        .page-title {
+            margin-bottom: 2rem;
+            display: flex; align-items: flex-end; justify-content: space-between;
+            flex-wrap: wrap; gap: 1rem;
+        }
+        .page-title h1 {
+            font-family: 'Cinzel', serif; font-size: 1.1rem;
+            font-weight: 600; letter-spacing: .3em; color: var(--text);
+        }
+        .page-title p {
+            font-size: .65rem; color: var(--muted);
+            letter-spacing: .12em; text-transform: uppercase; margin-top: .25rem;
+        }
+        .gold-bar { width: 36px; height: 1px; background: var(--gold); margin-top: .6rem; }
+
+        .last-refresh {
+            font-size: .62rem; color: var(--muted); letter-spacing: .1em;
+        }
+
+        /* ── STATS ── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem; margin-bottom: 2rem;
+        }
+        @media(max-width: 768px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+        @media(max-width: 480px) { .stat-grid { grid-template-columns: 1fr; } }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 3px; padding: 1.4rem 1.2rem;
+            position: relative; overflow: hidden;
+            transition: border-color .3s;
+        }
+        .stat-card::before {
+            content: ''; position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0; transition: opacity .3s;
+        }
+        .stat-card:hover { border-color: rgba(201,168,76,.35); }
+        .stat-card:hover::before { opacity: 1; }
+
+        .stat-icon {
+            font-size: 1.3rem; margin-bottom: .7rem; display: block;
+        }
+        .stat-val {
+            font-family: 'Cinzel', serif; font-size: 2.4rem;
+            font-weight: 900; color: var(--gold); line-height: 1;
+            transition: color .3s;
+        }
+        .stat-lbl {
+            font-size: .62rem; letter-spacing: .14em;
+            color: var(--muted); text-transform: uppercase; margin-top: .3rem;
+        }
+        .stat-badge {
+            display: inline-flex; align-items: center; gap: .3rem;
+            font-size: .62rem; margin-top: .6rem;
+            padding: .18rem .5rem; border-radius: 1px;
+        }
+        .stat-badge.ok { color: var(--success); background: rgba(78,200,122,.08); border: 1px solid rgba(78,200,122,.2); }
+        .stat-badge.warn { color: var(--warning); background: rgba(224,156,47,.08); border: 1px solid rgba(224,156,47,.2); }
+        .stat-badge.err { color: var(--danger); background: rgba(217,85,85,.08); border: 1px solid rgba(217,85,85,.2); }
+
+        /* ── GRID 2 COL ── */
+        .grid-2 {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 1.4rem; margin-bottom: 1.4rem;
+        }
+        @media(max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 3px; padding: 1.6rem;
+            position: relative; overflow: hidden;
+        }
+
+        .card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-label {
+            font-family: 'Cinzel', serif; font-size: .58rem;
+            letter-spacing: .28em; color: var(--gold); text-transform: uppercase;
+            display: flex; align-items: center; gap: .4rem;
+        }
+        .card-label::before {
+            content: ''; width: 10px; height: 1px; background: var(--gold);
+        }
+
+        .card-action {
+            font-size: .62rem; letter-spacing: .1em; color: var(--muted);
+            cursor: pointer; transition: color .2s; background: none;
+            border: none; font-family: 'DM Sans', sans-serif; padding: 0;
+        }
+        .card-action:hover { color: var(--gold); }
+
+        /* ── TABLE ── */
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%; border-collapse: collapse; font-size: .76rem;
+        }
+        th {
+            font-family: 'Cinzel', serif; font-size: .56rem;
+            letter-spacing: .18em; color: var(--gold); padding: .5rem .8rem;
+            border-bottom: 1px solid var(--border); text-align: left;
+            white-space: nowrap; text-transform: uppercase;
+        }
+        td {
+            padding: .65rem .8rem; color: var(--muted);
+            border-bottom: 1px solid rgba(201,168,76,.05);
+            transition: background .15s;
+        }
+        tr:hover td { background: rgba(201,168,76,.025); }
+        td:first-child { color: var(--text); }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: .3rem;
+            font-size: .68rem; padding: .18rem .5rem; border-radius: 1px;
+            letter-spacing: .06em;
+        }
+        .badge-ok { color: var(--success); }
+        .badge-err { color: var(--danger); }
+        .badge-warn { color: var(--warning); }
+
+        /* ── SALAS STATUS ── */
+        .sala-list { display: flex; flex-direction: column; gap: .5rem; }
+
+        .sala-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: .6rem .8rem;
+            background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 2px; transition: border-color .2s;
+        }
+        .sala-row:hover { border-color: rgba(201,168,76,.35); }
+
+        .sala-info { display: flex; align-items: center; gap: .7rem; }
+        .sala-ico2 { font-size: 1rem; }
+        .sala-name2 { font-size: .78rem; color: var(--text); }
+        .sala-tipo { font-size: .6rem; color: var(--muted); letter-spacing: .08em; margin-top: .1rem; }
+
+        .sala-indicator {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--success); box-shadow: 0 0 6px var(--success);
+        }
+
+        /* ── INTENTOS FALLIDOS ── */
+        .failed-list { display: flex; flex-direction: column; gap: .5rem; max-height: 280px; overflow-y: auto; }
+
+        .failed-row {
+            display: flex; align-items: center; gap: .8rem;
+            padding: .55rem .8rem; background: var(--surface2);
+            border: 1px solid rgba(217,85,85,.15); border-radius: 2px;
+        }
+        .failed-ico { font-size: 1.1rem; flex-shrink: 0; }
+        .failed-info { flex: 1; min-width: 0; }
+        .failed-nombre { font-size: .75rem; color: var(--text); }
+        .failed-meta { font-size: .62rem; color: var(--muted); letter-spacing: .06em; margin-top: .1rem; }
+        .failed-time { font-size: .62rem; color: var(--muted); white-space: nowrap; }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center; padding: 2rem;
+            color: var(--muted); font-size: .72rem; letter-spacing: .1em;
+        }
+
+        /* ── LOADING PULSE ── */
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+        /* ── FOOTER ── */
+        footer {
+            position: relative; z-index: 1;
+            text-align: center; padding: .9rem;
+            font-size: .58rem; letter-spacing: .14em;
+            color: var(--muted); border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="nav-left">
+        <div class="nav-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="11" width="18" height="11" rx="1"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            ARCVAULT
+        </div>
+        <div class="nav-divider"></div>
+        <span class="nav-section">Panel Administrativo</span>
+    </div>
+
+    <div class="nav-right">
+        <div class="status-dot"></div>
+        <div class="nav-user">
+            <span class="nav-user-name" id="nav-user-name">—</span>
+            <span class="nav-user-role">Administrador</span>
+        </div>
+        <button class="btn-nav" onclick="salir()">SALIR</button>
+    </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+    <!-- TITLE -->
+    <div class="page-title">
+        <div>
+            <h1>PANEL DE CONTROL</h1>
+            <p>Monitoreo en tiempo real del sistema de acceso</p>
+            <div class="gold-bar"></div>
+        </div>
+        <span class="last-refresh" id="last-refresh">Actualizando...</span>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <span class="stat-icon">🔓</span>
+            <div class="stat-val pulse" id="stat-accesos">—</div>
+            <div class="stat-lbl">Accesos Hoy</div>
+            <span class="stat-badge ok" id="badge-accesos">Sistema activo</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">⛔</span>
+            <div class="stat-val pulse" id="stat-fallidos">—</div>
+            <div class="stat-lbl">Intentos Fallidos</div>
+            <span class="stat-badge warn" id="badge-fallidos">Monitoreado</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">👤</span>
+            <div class="stat-val pulse" id="stat-usuarios">—</div>
+            <div class="stat-lbl">Usuarios Registrados</div>
+            <span class="stat-badge ok">Base biométrica</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">🏛️</span>
+            <div class="stat-val">8</div>
+            <div class="stat-lbl">Salas Activas</div>
+            <span class="stat-badge ok">Operativas</span>
+        </div>
+    </div>
+
+    <!-- LOG + SALAS -->
+    <div class="grid-2">
+
+        <!-- LOG RECIENTE -->
+        <div class="card" style="grid-column: span 2 / span 2;">
+            <div class="card-header">
+                <span class="card-label">Registro de Accesos Recientes</span>
+                <button class="card-action" onclick="cargarDatos()">↻ Actualizar</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Sala</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-accesos">
+                        <tr><td colspan="4" class="empty-state">Cargando registros...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-2">
+
+        <!-- SALAS -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-label">Estado de Salas</span>
+            </div>
+            <div class="sala-list" id="sala-list">
+                <!-- generado por JS -->
+            </div>
+        </div>
+
+        <!-- INTENTOS FALLIDOS -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-label">Intentos Fallidos Recientes</span>
+            </div>
+            <div class="failed-list" id="failed-list">
+                <div class="empty-state">Cargando...</div>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<footer>ARCVAULT © 2025 — PANEL ADMINISTRATIVO — NIVEL EJECUTIVO</footer>
+
+<script>
+    // ── VALIDACIÓN ─────────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const user = params.get('user');
+
+    if (!user) {
+        alert('⛔ Acceso no autorizado');
+        window.location.href = '/';
+    }
+
+    document.getElementById('nav-user-name').textContent = user;
+
+    // ── SALAS (estáticas, estado siempre activo) ───────────────────
+    const SALAS = [
+        { nombre: 'Ingreso',       icono: '🚪', tipo: 'Normal' },
+        { nombre: 'Laboratorio',   icono: '🧪', tipo: 'Normal' },
+        { nombre: 'Gerencia',      icono: '🏢', tipo: 'Restringida' },
+        { nombre: 'Redes',         icono: '🌐', tipo: 'Restringida' },
+        { nombre: 'Servidores',    icono: '🗄️', tipo: 'Restringida' },
+        { nombre: 'UPS',           icono: '🔋', tipo: 'Restringida' },
+        { nombre: 'Climatización', icono: '❄️', tipo: 'Normal' },
+        { nombre: 'Dashboard',     icono: '📊', tipo: 'Admin' },
+    ];
+
+    function renderSalas() {
+        const list = document.getElementById('sala-list');
+        list.innerHTML = SALAS.map(s => `
+            <div class="sala-row">
+                <div class="sala-info">
+                    <span class="sala-ico2">${s.icono}</span>
+                    <div>
+                        <div class="sala-name2">${s.nombre}</div>
+                        <div class="sala-tipo">${s.tipo}</div>
+                    </div>
+                </div>
+                <div class="sala-indicator"></div>
+            </div>
+        `).join('');
+    }
+
+    // ── CARGAR DATOS ───────────────────────────────────────────────
+    async function cargarDatos() {
+        try {
+            // Total usuarios
+            const resUsers = await fetch('/total-usuarios');
+            const dataUsers = await resUsers.json();
+            const totalUsuarios = dataUsers.total || 0;
+            animateNumber('stat-usuarios', totalUsuarios);
+
+            // Accesos hoy
+            const resAccesos = await fetch('/accesos-hoy');
+            const dataAccesos = await resAccesos.json();
+            const totalAccesos = dataAccesos.total || 0;
+            animateNumber('stat-accesos', totalAccesos);
+
+            // Badge accesos
+            const badgeAccesos = document.getElementById('badge-accesos');
+            badgeAccesos.textContent = totalAccesos > 0 ? `${totalAccesos} registrado${totalAccesos !== 1 ? 's' : ''}` : 'Sin accesos aún';
+
+            // Logs
+            const resLogs = await fetch('/logs');
+            const logs = await resLogs.json();
+            renderLogs(logs);
+
+            // Intentos fallidos
+            try {
+                const resFailed = await fetch('/failed-attempts');
+                if (resFailed.ok) {
+                    const failed = await resFailed.json();
+                    renderFailed(failed);
+                    const total = Array.isArray(failed) ? failed.length : 0;
+                    animateNumber('stat-fallidos', total);
+                    const badgeFailed = document.getElementById('badge-fallidos');
+                    if (total > 0) {
+                        badgeFailed.textContent = `${total} intento${total !== 1 ? 's' : ''} detectado${total !== 1 ? 's' : ''}`;
+                        badgeFailed.className = 'stat-badge err';
+                    } else {
+                        badgeFailed.textContent = 'Sin alertas';
+                        badgeFailed.className = 'stat-badge ok';
+                    }
+                }
+            } catch(e) {
+                // Si no existe el endpoint, no rompemos nada
+                document.getElementById('stat-fallidos').textContent = '—';
+            }
+
+            // Timestamp
+            const now = new Date();
+            document.getElementById('last-refresh').textContent =
+                'Actualizado: ' + now.getHours().toString().padStart(2,'0') + ':' +
+                now.getMinutes().toString().padStart(2,'0') + ':' +
+                now.getSeconds().toString().padStart(2,'0');
+
+            // Remover pulse una vez cargado
+            document.querySelectorAll('.pulse').forEach(el => el.classList.remove('pulse'));
+
+        } catch (err) {
+            console.error('Error cargando dashboard:', err);
+            document.getElementById('last-refresh').textContent = '⚠️ Error de conexión';
+        }
+    }
+
+    function renderLogs(logs) {
+        const tbody = document.getElementById('tabla-accesos');
+        if (!logs || logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Sin registros aún</td></tr>';
+            return;
+        }
+        tbody.innerHTML = logs.slice(0, 15).map(l => `
+            <tr>
+                <td>${l.nombre || '—'}</td>
+                <td>${l.sala || '—'}</td>
+                <td>${l.hora || '—'}</td>
+                <td>
+                    <span class="${l.estado === 'Exitosa' || l.estado === 'CONCEDIDO' ? 'badge-ok' : 'badge-err'}">
+                        ● ${l.estado || '—'}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderFailed(failed) {
+        const list = document.getElementById('failed-list');
+        if (!failed || failed.length === 0) {
+            list.innerHTML = '<div class="empty-state">Sin intentos fallidos registrados</div>';
+            return;
+        }
+        list.innerHTML = failed.slice(0, 8).map(f => `
+            <div class="failed-row">
+                <span class="failed-ico">⛔</span>
+                <div class="failed-info">
+                    <div class="failed-nombre">${f.nombre || 'Desconocido'}</div>
+                    <div class="failed-meta">${f.sala || ''} ${f.motivo ? '· ' + f.motivo : ''}</div>
+                </div>
+                <span class="failed-time">${f.hora || '—'}</span>
+            </div>
+        `).join('');
+    }
+
+    // ── ANIMACIÓN DE NÚMEROS ───────────────────────────────────────
+    function animateNumber(elId, target) {
+        const el = document.getElementById(elId);
+        const current = parseInt(el.textContent) || 0;
+        if (current === target) return;
+        const step = target > current ? 1 : -1;
+        let val = current;
+        const interval = setInterval(() => {
+            val += step;
+            el.textContent = val;
+            if (val === target) clearInterval(interval);
+        }, 40);
+    }
+
+    // ── SALIR ──────────────────────────────────────────────────────
+    function salir() {
+        window.location.href = '/';
+    }
+
+    // ── INIT ───────────────────────────────────────────────────────
+    renderSalas();
+    cargarDatos();
+    setInterval(cargarDatos, 5000); // Auto-refresh cada 5s
+</script>
+
+</body>
+</html>

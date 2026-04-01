@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARCVAULT — Control de Acceso</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --gold: #c9a84c;
+            --gold-light: #f0d080;
+            --gold-dim: rgba(201, 168, 76, 0.12);
+            --bg: #08080a;
+            --surface: #111114;
+            --surface2: #17171b;
+            --border: rgba(201, 168, 76, 0.18);
+            --text: #e6e1d6;
+            --muted: #66635e;
+            --danger: #d95555;
+            --success: #4ec87a;
+            --warning: #e09c2f;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(201, 168, 76, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201, 168, 76, 0.035) 1px, transparent 1px);
+            background-size: 52px 52px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: relative;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2.5rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(8, 8, 10, 0.9);
+            backdrop-filter: blur(14px);
+        }
+
+        .nav-logo {
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            font-size: 1.1rem;
+            letter-spacing: 0.22em;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+        }
+
+        .nav-logo svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .nav-sub {
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 7px var(--success);
+            animation: blink 2.2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .35
+            }
+        }
+
+        .status-label {
+            font-size: 0.68rem;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+        }
+
+        /* ── SCREENS ── */
+        .screen {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .screen.hidden {
+            display: none !important;
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: riseUp .7s ease both;
+        }
+
+        .page-header h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.3rem, 3vw, 1.9rem);
+            font-weight: 600;
+            letter-spacing: 0.28em;
+        }
+
+        .page-header p {
+            font-size: 0.72rem;
+            color: var(--muted);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-top: .35rem;
+        }
+
+        .gold-bar {
+            width: 44px;
+            height: 1px;
+            background: var(--gold);
+            margin: .7rem auto 0;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 1.8rem 1.6rem;
+            position: relative;
+            overflow: hidden;
+            transition: border-color .3s;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .card:hover {
+            border-color: rgba(201, 168, 76, .35);
+        }
+
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .card-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.3em;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: .45rem;
+        }
+
+        .card-label::before {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 1px;
+            background: var(--gold);
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            width: 100%;
+            padding: .72rem 1rem;
+            font-family: 'Cinzel', serif;
+            font-size: .68rem;
+            letter-spacing: .2em;
+            border: 1px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            cursor: pointer;
+            border-radius: 2px;
+            transition: background .2s, color .2s;
+            margin-bottom: .5rem;
+        }
+
+        .btn:hover {
+            background: var(--gold-dim);
+        }
+
+        .btn.solid {
+            background: var(--gold);
+            color: #08080a;
+            font-weight: 600;
+        }
+
+        .btn.solid:hover {
+            background: var(--gold-light);
+        }
+
+        .btn.danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .btn.danger:hover {
+            background: rgba(217, 85, 85, .12);
+        }
+
+        .btn:disabled {
+            opacity: .3;
+            cursor: not-allowed;
+        }
+
+        .btn.auto {
+            width: auto;
+            padding: .38rem .9rem;
+            margin: 0;
+            font-size: .6rem;
+        }
+
+        /* ── LOADING ── */
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 8, 10, .92);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem;
+        }
+
+        #loading-overlay.hidden {
+            display: none;
+        }
+
+        .loader-ring {
+            width: 52px;
+            height: 52px;
+            border: 2px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin .9s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loader-text {
+            font-family: 'Cinzel', serif;
+            font-size: .65rem;
+            letter-spacing: .25em;
+            color: var(--muted);
+        }
+
+        /* ── MAIN ACCESS SCREEN ── */
+        #screen-main .cards-row {
+            display: flex;
+            gap: 1.4rem;
+            width: 100%;
+            max-width: 1000px;
+            align-items: flex-start;
+            animation: riseUp .75s ease both;
+        }
+
+        @media(max-width:700px) {
+            #screen-main .cards-row {
+                flex-direction: column;
+            }
+        }
+
+        /* ── CAMERA ── */
+        .cam-wrap {
+            position: relative;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        #video {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cam-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .cam-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .7rem;
+            color: var(--muted);
+        }
+
+        .cam-placeholder svg {
+            width: 46px;
+            height: 46px;
+            opacity: .3;
+        }
+
+        .cam-placeholder span {
+            font-size: .68rem;
+            letter-spacing: .14em;
+        }
+
+        /* Scan line */
+        .scan-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            box-shadow: 0 0 10px var(--gold);
+            display: none;
+            animation: scanMove 2.4s linear infinite;
+        }
+
+        @keyframes scanMove {
+            0% {
+                top: 0%
+            }
+
+            100% {
+                top: 100%
+            }
+        }
+
+        /* Corner brackets */
+        .cam-wrap::before,
+        .cam-wrap::after,
+        .corner-bl,
+        .corner-br {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-color: var(--gold);
+            border-style: solid;
+            opacity: .55;
+            transition: opacity .3s;
+            z-index: 2;
+        }
+
+        .cam-wrap::before {
+            top: 10px;
+            left: 10px;
+            border-width: 2px 0 0 2px;
+        }
+
+        .cam-wrap::after {
+            top: 10px;
+            right: 10px;
+            border-width: 2px 2px 0 0;
+        }
+
+        .corner-bl {
+            bottom: 10px;
+            left: 10px;
+            border-width: 0 0 2px 2px;
+        }
+
+        .corner-br {
+            bottom: 10px;
+            right: 10px;
+            border-width: 0 2px 2px 0;
+        }
+
+        /* Face result overlay */
+        #face-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: .55rem 1rem;
+            font-size: .76rem;
+            letter-spacing: .08em;
+            text-align: center;
+            display: none;
+            backdrop-filter: blur(8px);
+            z-index: 3;
+        }
+
+        .face-ok {
+            background: rgba(78, 200, 122, .15);
+            color: var(--success);
+            border-top: 1px solid rgba(78, 200, 122, .3);
+        }
+
+        .face-err {
+            background: rgba(217, 85, 85, .15);
+            color: var(--danger);
+            border-top: 1px solid rgba(217, 85, 85, .3);
+        }
+
+        .face-warn {
+            background: rgba(224, 156, 47, .15);
+            color: var(--warning);
+            border-top: 1px solid rgba(224, 156, 47, .3);
+        }
+
+        /* ── DEBUG PANEL ── */
+        #debug-panel {
+            background: rgba(8, 8, 10, 0.85);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: .6rem .8rem;
+            margin-bottom: .8rem;
+            font-size: .66rem;
+            letter-spacing: .07em;
+            color: var(--muted);
+            display: none;
+            font-family: 'DM Sans', monospace;
+        }
+
+        #debug-panel.visible {
+            display: block;
+        }
+
+        .debug-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: .18rem;
+        }
+
+        .debug-label {
+            color: var(--muted);
+        }
+
+        .debug-val {
+            color: var(--text);
+        }
+
+        .debug-val.good {
+            color: var(--success);
+        }
+
+        .debug-val.warn {
+            color: var(--warning);
+        }
+
+        .debug-val.bad {
+            color: var(--danger);
+        }
+
+        /* ── CONFIDENCE BAR ── */
+        .conf-bar-wrap {
+            margin-top: .5rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 1px;
+            height: 4px;
+            overflow: hidden;
+        }
+
+        .conf-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--gold);
+            transition: width .3s ease, background .3s ease;
+            border-radius: 1px;
+        }
+
+        /* Door status */
+        .door-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .45rem;
+            font-size: .68rem;
+            color: var(--muted);
+            letter-spacing: .1em;
+            margin-top: .7rem;
+        }
+
+        /* ── TABS ── */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1.4rem;
+        }
+
+        .tab-btn {
+            padding: .65rem 1.1rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-family: 'Cinzel', serif;
+            font-size: .6rem;
+            letter-spacing: .18em;
+            color: var(--muted);
+            cursor: pointer;
+            transition: color .2s, border-color .2s;
+            margin-bottom: -1px;
+        }
+
+        .tab-btn.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* ── SALA GRID ── */
+        .sala-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .55rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .sala-btn {
+            padding: .8rem .4rem;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--muted);
+            font-size: .68rem;
+            letter-spacing: .07em;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all .2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .sala-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: var(--gold-dim);
+        }
+
+        .sala-btn.active {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: var(--gold-dim);
+            box-shadow: inset 0 0 0 1px var(--gold);
+        }
+
+        .sala-ico {
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: .25rem;
+        }
+
+        .sala-name {
+            display: block;
+            font-weight: 500;
+        }
+
+        .sala-status {
+            display: block;
+            font-size: .6rem;
+            margin-top: .18rem;
+            color: var(--success);
+            letter-spacing: .06em;
+        }
+
+        .sala-btn.locked .sala-status {
+            color: var(--danger);
+        }
+
+        .sala-selected-label {
+            font-size: .67rem;
+            color: var(--muted);
+            letter-spacing: .08em;
+            text-align: center;
+        }
+
+        .sala-selected-label span {
+            color: var(--gold);
+        }
+
+        .sala-btn.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: rgba(217, 85, 85, 0.4);
+        }
+
+        .sala-btn.locked:hover {
+            background: rgba(217, 85, 85, 0.1);
+            color: var(--danger);
+        }
+
+        /* ── FORM ── */
+        .form-group {
+            margin-bottom: .9rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: .63rem;
+            letter-spacing: .15em;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: .3rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: .58rem .72rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: .85rem;
+            border-radius: 2px;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--gold);
+        }
+
+        .form-group input[type="file"] {
+            font-size: .74rem;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        #form-status {
+            font-size: .72rem;
+            color: var(--muted);
+            letter-spacing: .08em;
+            margin-top: .5rem;
+            text-align: center;
+            min-height: 1.1rem;
+        }
+
+        /* ── TOGGLE DEBUG ── */
+        .debug-toggle {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: .62rem;
+            color: var(--muted);
+            letter-spacing: .1em;
+            cursor: pointer;
+            margin-bottom: .6rem;
+            user-select: none;
+        }
+
+        .debug-toggle input {
+            accent-color: var(--gold);
+        }
+
+        /* ── THRESHOLD CONTROL ── */
+        .threshold-wrap {
+            margin-bottom: .8rem;
+        }
+
+        .threshold-wrap label {
+            font-size: .62rem;
+            letter-spacing: .12em;
+            color: var(--muted);
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: .3rem;
+        }
+
+        .threshold-wrap label span {
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--gold);
+            background: transparent;
+            cursor: pointer;
+        }
+
+        /* ── DASHBOARD ── */
+        #screen-dashboard {
+            align-items: center;
+            padding: 2rem 1.5rem;
+        }
+
+        #screen-dashboard>.inner {
+            width: 100%;
+            max-width: 1000px;
+            animation: riseUp .55s ease both;
+        }
+
+        .dash-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: .8rem;
+        }
+
+        .dash-title {
+            font-family: 'Cinzel', serif;
+            font-size: .7rem;
+            letter-spacing: .25em;
+            color: var(--gold);
+        }
+
+        .dash-user {
+            font-size: .7rem;
+            color: var(--muted);
+            letter-spacing: .08em;
+        }
+
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        @media(max-width:640px) {
+            .stat-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            padding: 1.2rem 1rem;
+        }
+
+        .stat-val {
+            font-family: 'Cinzel', serif;
+            font-size: 2.1rem;
+            font-weight: 900;
+            color: var(--gold);
+            line-height: 1;
+        }
+
+        .stat-lbl {
+            font-size: .63rem;
+            letter-spacing: .12em;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-top: .28rem;
+        }
+
+        .stat-sub {
+            font-size: .67rem;
+            color: var(--success);
+            margin-top: .45rem;
+        }
+
+        .log-wrap {
+            overflow-x: auto;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .76rem;
+        }
+
+        .log-table th {
+            font-family: 'Cinzel', serif;
+            font-size: .58rem;
+            letter-spacing: .2em;
+            color: var(--gold);
+            padding: .55rem .8rem;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .log-table td {
+            padding: .62rem .8rem;
+            color: var(--muted);
+            border-bottom: 1px solid rgba(201, 168, 76, .06);
+        }
+
+        .log-table td:first-child {
+            color: var(--text);
+        }
+
+        .badge-ok {
+            color: var(--success);
+        }
+
+        .badge-err {
+            color: var(--danger);
+        }
+
+        /* ── MODALES ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .78);
+            backdrop-filter: blur(8px);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-box {
+            background: var(--surface);
+            border: 1px solid var(--gold);
+            border-radius: 3px;
+            padding: 2.4rem 2rem;
+            max-width: 380px;
+            width: 92%;
+            text-align: center;
+            animation: riseUp .3s ease both;
+        }
+
+        .modal-box.danger {
+            border-color: var(--danger);
+        }
+
+        .modal-ico {
+            font-size: 2.8rem;
+            margin-bottom: .9rem;
+        }
+
+        .modal-title {
+            font-family: 'Cinzel', serif;
+            font-size: .84rem;
+            letter-spacing: .2em;
+            color: var(--gold);
+            margin-bottom: .45rem;
+        }
+
+        .modal-box.danger .modal-title {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            font-size: .78rem;
+            color: var(--muted);
+            margin-bottom: 1.4rem;
+            line-height: 1.65;
+        }
+
+        .modal-body strong {
+            color: var(--text);
+        }
+
+        #modal-admin .form-group input {
+            margin-bottom: 0;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes riseUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulseGold {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(201, 168, 76, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 0 6px rgba(201, 168, 76, 0.15);
+            }
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: .9rem;
+            font-size: .6rem;
+            letter-spacing: .14em;
+            color: var(--muted);
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="11" width="18" height="11" rx="1" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            ARCVAULT
+        </div>
+        <span class="nav-sub">Sistema de Control de Acceso Biométrico</span>
+        <div class="nav-right">
+            <div class="status-dot"></div>
+            <span class="status-label" id="nav-status">EN LÍNEA</span>
+        </div>
+    </nav>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay">
+        <div class="loader-ring"></div>
+        <span class="loader-text" id="loading-text">INICIALIZANDO...</span>
+    </div>
+
+    <!-- ══════════════════════════════ SCREEN: MAIN ACCESS ══════════════════════════════ -->
+    <div class="screen hidden" id="screen-main">
+        <div class="page-header" style="margin-bottom:1.5rem;">
+            <h1>CONTROL DE ACCESO</h1>
+            <p id="empresa-nombre-label">Empresa — Verificación Biométrica</p>
+            <div class="gold-bar"></div>
+        </div>
+
+        <div class="cards-row">
+
+            <!-- CÁMARA -->
+            <div class="card" style="flex:1.25; min-width:0;">
+                <div class="card-label">Reconocimiento Facial</div>
+
+                <div class="cam-wrap" id="camWrap">
+                    <video id="video" autoplay muted playsinline></video>
+                    <canvas id="faceCanvas" class="cam-canvas"></canvas>
+                    <div class="cam-placeholder" id="camPlaceholder">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                        </svg>
+                        <span>CÁMARA INACTIVA</span>
+                    </div>
+                    <div class="scan-line" id="scanLine"></div>
+                    <div class="corner-bl"></div>
+                    <div class="corner-br"></div>
+                    <div id="face-overlay"></div>
+                </div>
+
+                <!-- Debug panel -->
+                <div id="debug-panel">
+                    <div class="debug-row">
+                        <span class="debug-label">ROSTROS DETECTADOS</span>
+                        <span class="debug-val" id="dbg-faces">0</span>
+                    </div>
+                    <div class="debug-row">
+                        <span class="debug-label">MEJOR MATCH</span>
+                        <span class="debug-val" id="dbg-label">—</span>
+                    </div>
+                    <div class="debug-row">
+                        <span class="debug-label">DISTANCIA</span>
+                        <span class="debug-val" id="dbg-dist">—</span>
+                    </div>
+                    <div class="debug-row">
+                        <span class="debug-label">UMBRAL ACTIVO</span>
+                        <span class="debug-val" id="dbg-threshold">0.65</span>
+                    </div>
+                    <div class="conf-bar-wrap">
+                        <div class="conf-bar-fill" id="dbg-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Threshold control -->
+                <div class="threshold-wrap">
+                    <label>
+                        Sensibilidad de reconocimiento
+                        <span id="threshold-display">0.65</span>
+                    </label>
+                    <input type="range" id="threshold-slider" min="0.45" max="0.80" step="0.01" value="0.65" />
+                </div>
+
+                <label class="debug-toggle">
+                    <input type="checkbox" id="debug-toggle-check" />
+                    MOSTRAR DEBUG
+                </label>
+
+                <button class="btn solid" id="btnStartCam">▶ ACTIVAR CÁMARA</button>
+                <button class="btn" id="btnStopCam" style="display:none;">■ DETENER CÁMARA</button>
+
+                <div class="door-status" id="doorStatus">
+                    <span>🔒</span>
+                    <span id="doorLabel">Puerta asegurada — esperando verificación</span>
+                </div>
+            </div>
+
+            <!-- PANEL DERECHO -->
+            <div class="card" style="flex:1; min-width:0;">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="salas">SALAS</button>
+                    <button class="tab-btn" data-tab="registro">REGISTRAR</button>
+                </div>
+
+                <!-- SALAS -->
+                <div class="tab-pane active" id="tab-salas">
+                    <div class="card-label">Seleccionar Sala de Acceso</div>
+                    <div class="sala-grid" id="salaGrid"></div>
+                    <p class="sala-selected-label">
+                        Sala activa: <span id="salaActualLabel">Ingreso</span>
+                    </p>
+                </div>
+
+                <!-- REGISTRO -->
+                <div class="tab-pane" id="tab-registro">
+                    <div class="card-label">Registrar Nuevo Usuario</div>
+                    <form id="user-form" autocomplete="off">
+                        <div class="form-group">
+                            <label>Nombre Completo</label>
+                            <input type="text" id="reg-name" name="name" required placeholder="Ej. Carlos Herrera" />
+                        </div>
+                        <div class="form-group">
+                            <label>DPI / Documento</label>
+                            <input type="text" id="reg-cedula" name="cedula" required placeholder="0000 00000 0000" />
+                        </div>
+                        <div class="form-group">
+                            <label>Rol / Cargo</label>
+                            <select id="reg-cargo" name="cargo" required class="form-group input">
+                                <option value="">Seleccionar rol</option>
+                                <option value="Gerente">Recepción</option>
+                                <option value="Empleado">Mantrab</option>
+                                <option value="Seguridad">Sala de comunicaciones</option>
+                                <option value="TI">Redes</option>
+                                <option value="TI">Servidores</option>
+                                <option value="TI">Energia</option>
+                                <option value="TI">UPS</option>
+                                <option value="TI">NOC</option>
+                                <option value="TI">Aire Acondicionado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fotografía</label>
+
+                            <button type="button" class="btn solid" id="btnCaptureMain">
+                                📸 TOMAR FOTO DESDE CÁMARA
+                            </button>
+
+                            <input type="hidden" id="reg-photo" name="photo" />
+                        </div>
+                        <button type="submit" class="btn solid" id="btnSubmitUser">+ REGISTRAR USUARIO</button>
+                        <p id="form-status"></p>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════ SCREEN: DASHBOARD ══════════════════════════════ -->
+    <div class="screen hidden" id="screen-dashboard">
+        <div class="inner">
+            <div class="dash-topbar">
+                <span class="dash-title">PANEL ADMINISTRATIVO — ARCVAULT</span>
+                <div style="display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;">
+                    <span class="dash-user" id="dashUserLabel">—</span>
+                    <button class="btn auto" id="btnLogout">CERRAR SESIÓN</button>
+                </div>
+            </div>
+
+            <div class="stat-row">
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-accesos">0</div>
+                    <div class="stat-lbl">Accesos Hoy</div>
+                    <div class="stat-sub" id="stat-accesos-sub">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-salas">4</div>
+                    <div class="stat-lbl">Salas Activas</div>
+                    <div class="stat-sub">Sistema operativo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-usuarios">0</div>
+                    <div class="stat-lbl">Usuarios Registrados</div>
+                    <div class="stat-sub" id="stat-empresa-dash">—</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-label">Registro de Accesos Recientes</div>
+                <div class="log-wrap">
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th>NOMBRE</th>
+                                <th>SALA / UBICACIÓN</th>
+                                <th>HORA</th>
+                                <th>DISTANCIA</th>
+                                <th>ESTADO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logBody">
+                            <tr>
+                                <td colspan="5" style="color:var(--muted);text-align:center;padding:1.5rem;">Sin
+                                    registros aún</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════ MODALES ══════════════════════════════ -->
+
+    <!-- Acceso concedido -->
+    <div class="modal-overlay hidden" id="modal-ok">
+        <div class="modal-box">
+            <div class="modal-ico">✅</div>
+            <div class="modal-title">ACCESO CONCEDIDO</div>
+            <div class="modal-body" id="modal-ok-body">—</div>
+            <button class="btn solid" id="modal-ok-btn">CONTINUAR</button>
+        </div>
+    </div>
+
+    <!-- Acceso denegado -->
+    <div class="modal-overlay hidden" id="modal-err">
+        <div class="modal-box danger">
+            <div class="modal-ico">⛔</div>
+            <div class="modal-title">ACCESO DENEGADO</div>
+            <div class="modal-body">Rostro no reconocido en el sistema.<br>Intento registrado y notificado.</div>
+            <button class="btn danger" id="modal-err-btn">CERRAR</button>
+        </div>
+    </div>
+
+    <!-- Ya registrado hoy -->
+    <div class="modal-overlay hidden" id="modal-already">
+        <div class="modal-box">
+            <div class="modal-ico">ℹ️</div>
+            <div class="modal-title">YA REGISTRADO</div>
+            <div class="modal-body" id="modal-already-body">Ya tiene una entrada registrada hoy.</div>
+            <button class="btn solid" id="modal-already-btn">ENTENDIDO</button>
+        </div>
+    </div>
+
+    <!-- Admin login -->
+    <div class="modal-overlay hidden" id="modal-admin">
+        <div class="modal-box">
+            <div class="modal-ico">🔐</div>
+            <div class="modal-title">ACCESO ADMINISTRATIVO</div>
+            <div class="modal-body">Ingrese sus credenciales de administrador para continuar.</div>
+            <div class="form-group" style="text-align:left;">
+                <label>Usuario</label>
+                <input type="text" id="admin-user" placeholder="admin" />
+            </div>
+            <div class="form-group" style="text-align:left;margin-bottom:1.2rem;">
+                <label>Contraseña</label>
+                <input type="password" id="admin-pass" placeholder="••••••••" />
+            </div>
+            <div style="display:flex;gap:.6rem;">
+                <button class="btn" id="modal-admin-cancel" style="margin:0;">CANCELAR</button>
+                <button class="btn solid" id="modal-admin-ok" style="margin:0;">INGRESAR</button>
+            </div>
+            <p id="admin-login-error"
+                style="color:var(--danger);font-size:.7rem;letter-spacing:.08em;margin-top:.6rem;min-height:1rem;"></p>
+        </div>
+    </div>
+
+    <!-- Registro exitoso -->
+    <div class="modal-overlay hidden" id="modal-reg">
+        <div class="modal-box">
+            <div class="modal-ico">🎖️</div>
+            <div class="modal-title">USUARIO REGISTRADO</div>
+            <div class="modal-body">El perfil ha sido guardado y está listo para verificación biométrica.</div>
+            <button class="btn solid" id="modal-reg-btn">ACEPTAR</button>
+        </div>
+    </div>
+
+    <footer>ARCVAULT © 2025 — SISTEMA DE CONTROL DE ACCESO BIOMÉTRICO — NIVEL EJECUTIVO</footer>
+
+    <!-- face-api.js -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js/dist/face-api.min.js"></script>
+    <script src="script.js" defer></script>
+
+
+</body>
+
+</html>
