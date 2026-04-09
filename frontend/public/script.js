@@ -432,7 +432,6 @@ async function runFaceDetection() {
 
     } else {
         setFaceOverlay(`✅ ${result.label} (d=${result.distance.toFixed(3)})`, 'ok');
-        State.processing = true;
         State.lastMatchTime = now;
         await handleSuccessMatch(result.label, result.distance);
     }
@@ -451,8 +450,9 @@ function setFaceOverlay(msg, type) {
 // 6. MATCH EXITOSO
 // ══════════════════════════════════════════════════════════════
 async function handleSuccessMatch(nombreLabel, distancia) {
-    accesoActivo = true;
-    addLog(nombreLabel, State.sala, 'CONCEDIDO', distancia);
+    console.log("🔥 ENTRE A SUCCESS");
+    accesoActivo = false;
+    procesarAccesoESP32(nombreLabel, distancia);
     stopCamera();
 
     let esAdmin = false;
@@ -730,11 +730,19 @@ function renderSalas() {
                     <span class="sala-status">● ${isLocked ? 'Bloqueado' : sala.tipo}</span>
                 `;
         btn.onclick = () => {
-            if (isLocked) { alert('⛔ No tienes acceso a esta sala'); return; }
+            if (isLocked) {
+                alert('⛔ No tienes acceso a esta sala');
+                return;
+            }
+
             document.querySelectorAll('.sala-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+
             State.sala = sala.nombre;
             document.getElementById('salaActualLabel').textContent = sala.nombre;
+
+            // 🔥 ESTA ES LA ÚNICA LÍNEA NUEVA
+            document.getElementById("btnSalirSala").style.display = "inline-block";
         };
         grid.appendChild(btn);
     });
@@ -822,6 +830,31 @@ function obtenerPermisosPorRol(rol) {
                 salas: ["Recepción"]
             };
     }
+}
+
+
+
+function salirSistema() {
+    try {
+        stopCamera();
+    } catch (e) { }
+
+    window.location.href = "index.html";
+}
+
+
+function procesarAccesoESP32(nombreLabel, distancia) {
+    console.log("🔥 PROCESANDO ACCESO ESP32");
+
+    addLog(nombreLabel, State.sala, 'CONCEDIDO', distancia);
+
+    console.log("📡 Simulación envío a ESP32...");
+
+    fetch("http://192.168.1.100/abrir")
+        .then(() => console.log("🚀 ESP32 activado"))
+        .catch(() => {
+            console.warn("⚠️ ESP32 no disponible (modo simulación)");
+        });
 }
 // ══════════════════════════════════════════════════════════════
 // INIT

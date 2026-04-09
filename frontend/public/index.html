@@ -10,15 +10,23 @@
         rel="stylesheet" />
     <style>
         :root {
-            --gold: #c9a84c;
-            --gold-light: #f0d080;
-            --gold-dim: rgba(201, 168, 76, 0.12);
-            --bg: #08080a;
-            --surface: #111114;
-            --surface2: #17171b;
-            --border: rgba(201, 168, 76, 0.18);
-            --text: #e6e1d6;
-            --muted: #66635e;
+            --gold: #64758C;
+            /* azul medio */
+            --gold-light: #949BA6;
+            --gold-dim: rgba(100, 117, 140, 0.15);
+
+            --bg: #0D0D0D;
+            /* negro */
+            --surface: #253659;
+            /* azul oscuro */
+            --surface2: #1f2d4a;
+
+            --border: rgba(148, 155, 166, 0.2);
+
+            --text: #D9D9D9;
+            /* TEXTO CLARO */
+            --muted: #949BA6;
+
             --danger: #d95555;
             --success: #4ec87a;
             --warning: #e09c2f;
@@ -33,7 +41,7 @@
         }
 
         body {
-            background: var(--bg);
+            background: radial-gradient(circle at top, #1f3a4f 0%, #192E40 60%, #162633 100%);
             color: var(--text);
             font-family: 'DM Sans', sans-serif;
             min-height: 100vh;
@@ -47,8 +55,8 @@
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(201, 168, 76, 0.035) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(201, 168, 76, 0.035) 1px, transparent 1px);
+                linear-gradient(rgba(176, 198, 217, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(176, 198, 217, 0.06) 1px, transparent 1px);
             background-size: 52px 52px;
             pointer-events: none;
             z-index: 0;
@@ -63,7 +71,7 @@
             justify-content: space-between;
             padding: 1rem 2.5rem;
             border-bottom: 1px solid var(--border);
-            background: rgba(8, 8, 10, 0.9);
+            background: rgba(13, 13, 13, 0.9);
             backdrop-filter: blur(14px);
         }
 
@@ -103,6 +111,15 @@
             background: var(--success);
             box-shadow: 0 0 7px var(--success);
             animation: blink 2.2s ease-in-out infinite;
+        }
+
+        #reg-cargo {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(23, 96, 191, 0.3);
+            color: #0b0f14;
+            padding: .55rem;
+            border-radius: 2px;
         }
 
         @keyframes blink {
@@ -170,13 +187,23 @@
 
         /* ── CARD ── */
         .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: rgba(176, 198, 217, 0.08);
+            border: 1px solid rgba(176, 198, 217, 0.15);
             border-radius: 3px;
             padding: 1.8rem 1.6rem;
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
             transition: border-color .3s;
+        }
+
+        .card {
+            color: var(--text);
+        }
+
+        .card {
+            color: #FFFFFF;
         }
 
         .card::after {
@@ -192,7 +219,7 @@
         }
 
         .card:hover {
-            border-color: rgba(201, 168, 76, .35);
+            border-color: rgba(100, 117, 140, 0.4);
         }
 
         .card:hover::after {
@@ -203,7 +230,10 @@
             font-family: 'Cinzel', serif;
             font-size: 0.6rem;
             letter-spacing: 0.3em;
-            color: var(--gold);
+            color: #B0C6D9;
+            /* ← CAMBIO AQUÍ */
+            font-weight: 700;
+            /* ← MÁS VISIBILIDAD */
             text-transform: uppercase;
             margin-bottom: 1.3rem;
             display: flex;
@@ -240,13 +270,19 @@
         }
 
         .btn.solid {
-            background: var(--gold);
-            color: #08080a;
+            background: linear-gradient(135deg, #253659, #64758C);
+            color: #fff;
             font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 6px 20px rgba(37, 54, 89, 0.6);
+            transition: all .25s ease;
         }
 
         .btn.solid:hover {
-            background: var(--gold-light);
+            background: linear-gradient(135deg, #64758C, #949BA6);
+            box-shadow: 0 8px 28px rgba(100, 117, 140, 0.8);
+            transform: translateY(-2px);
         }
 
         .btn.danger {
@@ -585,30 +621,30 @@
         }
 
         .sala-btn {
-            padding: .8rem .4rem;
-            border: 1px solid var(--border);
-            background: var(--surface2);
-            color: var(--muted);
+            padding: .85rem .5rem;
+            border: 1px solid rgba(148, 155, 166, 0.2);
+            background: rgba(13, 13, 13, 0.65);
+            color: #D9D9D9;
             font-size: .68rem;
-            letter-spacing: .07em;
             text-align: center;
             cursor: pointer;
-            border-radius: 2px;
-            transition: all .2s;
-            font-family: 'DM Sans', sans-serif;
+            border-radius: 4px;
+            transition: all .25s ease;
+            backdrop-filter: blur(6px);
         }
 
+        /* HOVER */
         .sala-btn:hover {
-            border-color: var(--gold);
-            color: var(--gold);
-            background: var(--gold-dim);
+            border-color: #64758C;
+            background: rgba(100, 117, 140, 0.15);
+            transform: scale(1.04);
         }
 
+        /* ACTIVO */
         .sala-btn.active {
-            border-color: var(--gold);
-            color: var(--gold);
-            background: var(--gold-dim);
-            box-shadow: inset 0 0 0 1px var(--gold);
+            background: linear-gradient(135deg, #253659, #64758C);
+            border-color: #64758C;
+            box-shadow: 0 0 18px rgba(100, 117, 140, 0.6);
         }
 
         .sala-ico {
@@ -618,8 +654,7 @@
         }
 
         .sala-name {
-            display: block;
-            font-weight: 500;
+            color: #D9D9D9;
         }
 
         .sala-status {
@@ -670,27 +705,38 @@
             margin-bottom: .3rem;
         }
 
-        .form-group input {
+        .form-group input,
+        #reg-cargo {
             width: 100%;
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: .58rem .72rem;
+            background: rgba(13, 13, 13, 0.75);
+            border: 1px solid rgba(148, 155, 166, 0.25);
+            color: #D9D9D9;
+            padding: .6rem .75rem;
             font-family: 'DM Sans', sans-serif;
             font-size: .85rem;
-            border-radius: 2px;
+            border-radius: 3px;
             outline: none;
-            transition: border-color .2s;
+            transition: all .25s ease;
         }
 
-        .form-group input:focus {
-            border-color: var(--gold);
+        /* EFECTO AL HACER CLICK */
+        .form-group input:focus,
+        #reg-cargo:focus {
+            border-color: #64758C;
+            box-shadow: 0 0 0 2px rgba(100, 117, 140, 0.25);
+            background: rgba(13, 13, 13, 0.95);
         }
 
+        /* INPUT FILE */
         .form-group input[type="file"] {
             font-size: .74rem;
-            color: var(--muted);
+            color: #949BA6;
             cursor: pointer;
+        }
+
+        /* PLACEHOLDER MÁS PRO */
+        .form-group input::placeholder {
+            color: rgba(217, 217, 217, 0.4);
         }
 
         #form-status {
@@ -1078,6 +1124,9 @@
                     <p class="sala-selected-label">
                         Sala activa: <span id="salaActualLabel">Ingreso</span>
                     </p>
+                    <button class="btn auto hidden" id="btnSalirSala" onclick="salirSistema()">
+                        SALIR DE SALA
+                    </button>
                 </div>
 
                 <!-- REGISTRO -->

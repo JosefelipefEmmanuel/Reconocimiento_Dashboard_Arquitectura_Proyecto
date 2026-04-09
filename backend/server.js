@@ -187,9 +187,11 @@ app.post('/register-entry', (req, res) => {
 
             const user = results[0];
 
+            const cargo = (user.cargo || "").toLowerCase();
+
             const esAdmin =
                 Number(user.fijo) === 1 ||
-                user.cargo.toLowerCase().includes('admin');
+                cargo.includes('admin');
 
             // 🔥 SI NO ES ADMIN → VALIDAR SALA
             if (!esAdmin && user.sala_permitida !== ubicacion) {
@@ -307,16 +309,18 @@ app.post('/login', (req, res) => {
         }
     );
 });
-
 app.get('/permisos-usuario', (req, res) => {
     const { usuarioId } = req.query;
 
     db.query(
-        'SELECT cargo, fijo, sala_permitida FROM tabla_usuarios WHERE id = ?',
+        'SELECT cargo, fijo FROM tabla_usuarios WHERE id = ?',
         [usuarioId],
         (err, results) => {
 
-            if (err) return res.status(500).send('Error');
+            if (err) {
+                console.error("❌ ERROR BD permisos:", err);
+                return res.status(500).send('Error');
+            }
 
             if (!results.length) {
                 return res.json({ admin: false, salas: [] });
@@ -324,23 +328,36 @@ app.get('/permisos-usuario', (req, res) => {
 
             const user = results[0];
 
-            // 🔥 ADMIN (fijo = 1)
-            if (Number(user.fijo) === 1 || user.cargo.toLowerCase().includes('admin')) {
+            const cargo = user.cargo ? String(user.cargo).toLowerCase() : "";
+
+            const esAdmin =
+                Number(user.fijo) === 1 ||
+                cargo.includes('admin');
+
+            // 🔥 ADMIN → TODAS LAS SALAS
+            if (esAdmin) {
                 return res.json({
                     admin: true,
                     salas: SALAS_VALIDAS
                 });
             }
 
-            // 🔥 USUARIO NORMAL
+            // 🔥 USUARIO NORMAL → solo por rol
+            let salas = [];
+
+            if (cargo.includes("recepcion")) salas = ["Recepción"];
+            else if (cargo.includes("operador")) salas = ["Mantrab"];
+            else if (cargo.includes("ti")) salas = ["Redes", "Servidores", "NOC"];
+            else if (cargo.includes("infra")) salas = ["Energía", "UPS", "Aire acondicionado"];
+            else salas = ["Recepción"]; // default
+
             return res.json({
                 admin: false,
-                salas: [user.sala_permitida]
+                salas
             });
         }
     );
 });
-
 // ============================
 // KEEP ALIVE DB
 // ============================
