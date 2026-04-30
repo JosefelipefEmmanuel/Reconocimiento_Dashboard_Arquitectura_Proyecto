@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCVAULT — Panel Administrativo</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1760BF;
+            --primary-light: #1771BF;
+
+            --bg: #192E40;
+            --surface: #1f3a4f;
+            --surface2: #162633;
+
+            --border: rgba(176, 198, 217, 0.15);
+
+            --text: #B0C6D9;
+            --muted: #728EA6;
+
+            --success: #4ec87a;
+            --danger: #d95555;
+        }
+
+        /* RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #1f3a4f 0%, #192E40 60%, #162633 100%);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        /* GRID FONDO */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(176, 198, 217, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(176, 198, 217, 0.05) 1px, transparent 1px);
+            background-size: 52px 52px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* NAV */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(25, 46, 64, 0.95);
+        }
+
+        .nav-logo {
+            font-family: 'Cinzel', serif;
+            letter-spacing: .25em;
+            color: var(--primary);
+        }
+
+        .btn-nav {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+            padding: .4rem .9rem;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .btn-nav:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* MAIN */
+        main {
+            max-width: 1100px;
+            margin: auto;
+            padding: 2rem;
+        }
+
+        /* TITLE */
+        h1 {
+            font-family: 'Cinzel', serif;
+            letter-spacing: .35em;
+            margin-bottom: 2rem;
+            color: var(--primary);
+        }
+
+        /* STATS */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 1.2rem;
+            transition: .25s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(23, 96, 191, .3);
+        }
+
+        .stat-val {
+            font-size: 2.2rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .stat-lbl {
+            font-size: .7rem;
+            color: var(--muted);
+            margin-top: .3rem;
+        }
+
+        /* GRID */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* CARD */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            transition: .25s;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            font-size: .65rem;
+            color: var(--primary);
+            text-align: left;
+            letter-spacing: .1em;
+        }
+
+        td {
+            font-size: .8rem;
+            color: var(--text);
+            padding: .4rem 0;
+        }
+
+        tr:hover td {
+            background: rgba(23, 96, 191, 0.05);
+        }
+
+        /* SALAS */
+        .sala-item {
+            padding: .4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 1rem;
+            font-size: .6rem;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-logo">ARCVAULT</div>
+        <button class="btn-nav" onclick="salir()">SALIR</button>
+    </nav>
+
+    <main>
+
+        <h1>PANEL DE CONTROL</h1>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-val" id="stat-accesos">0</div>
+                <div class="stat-lbl">Accesos Hoy</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-val" id="stat-fallidos">0</div>
+                <div class="stat-lbl">Intentos Fallidos</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-val" id="stat-usuarios">0</div>
+                <div class="stat-lbl">Usuarios</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-val">8</div>
+                <div class="stat-lbl">Salas</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+
+            <div class="card">
+                <h3 style="margin-bottom:1rem;color:var(--primary);">Accesos Recientes</h3>
+                <table>
+                    <tbody id="tabla-accesos">
+                        <tr>
+                            <td>Cargando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom:1rem;color:var(--primary);">Salas</h3>
+                <div id="sala-list"></div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer>ARCVAULT © 2025 — PANEL ADMINISTRATIVO</footer>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const user = params.get('user');
+
+        if (!user) {
+            alert("Acceso no autorizado");
+            window.location.href = "/";
+        }
+        
+        function salir() {
+            window.location.href = "/";
+        }
+        const SALAS = [
+            "Ingreso", "Laboratorio", "Gerencia", "Redes",
+            "Servidores", "UPS", "Clima", "Dashboard"
+        ];
+
+        function renderSalas() {
+            const list = document.getElementById("sala-list");
+            list.innerHTML = SALAS.map(s => `<div class="sala-item">${s}</div>`).join('');
+        }
+
+        async function cargarDatos() {
+            try {
+                const u = await fetch('/total-usuarios').then(r => r.json());
+                const a = await fetch('/accesos-hoy').then(r => r.json());
+
+                document.getElementById('stat-usuarios').textContent = u.total || 0;
+                document.getElementById('stat-accesos').textContent = a.total || 0;
+
+                const logs = await fetch('/logs').then(r => r.json());
+                const tabla = document.getElementById('tabla-accesos');
+
+                if (!logs.length) {
+                    tabla.innerHTML = "<tr><td>Sin datos</td></tr>";
+                    return;
+                }
+
+                tabla.innerHTML = logs.slice(0, 10).map(l => `
+            <tr>
+                <td>${l.nombre}</td>
+                <td>${l.sala}</td>
+                <td>${l.estado}</td>
+            </tr>
+        `).join('');
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        renderSalas();
+        cargarDatos();
+        setInterval(cargarDatos, 5000);
+    </script>
+
+</body>
+
+</html>
