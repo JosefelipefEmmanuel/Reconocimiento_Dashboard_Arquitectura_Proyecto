@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARCVAULT — Panel Administrativo</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #1760BF;
+      --primary-light: #2b82ff;
+      --bg: #101c28;
+      --surface: rgba(31, 58, 79, .92);
+      --surface2: rgba(22, 38, 51, .96);
+      --border: rgba(176, 198, 217, 0.16);
+      --text: #B0C6D9;
+      --muted: #728EA6;
+      --success: #4ec87a;
+      --danger: #d95555;
+      --warning: #d9b555;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f3a4f 0%, #192E40 48%, #101c28 100%);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(176, 198, 217, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(176, 198, 217, 0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(16, 28, 40, .92);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      font-family: 'Cinzel', serif;
+      letter-spacing: .28em;
+      color: var(--primary-light);
+      font-weight: 900;
+    }
+
+    .nav-right {
+      display: flex;
+      gap: .8rem;
+      align-items: center;
+    }
+
+    .user-pill {
+      border: 1px solid var(--border);
+      padding: .45rem .8rem;
+      font-size: .75rem;
+      color: var(--muted);
+      background: rgba(255,255,255,.03);
+    }
+
+    button {
+      border: 1px solid var(--primary);
+      background: transparent;
+      color: var(--primary-light);
+      padding: .5rem .9rem;
+      cursor: pointer;
+      transition: .2s;
+      letter-spacing: .08em;
+      font-size: .72rem;
+    }
+
+    button:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1450px;
+      margin: auto;
+      padding: 2rem;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: end;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      letter-spacing: .28em;
+      color: var(--primary-light);
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: .82rem;
+      margin-top: .4rem;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat-card, .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: 0 15px 35px rgba(0,0,0,.18);
+    }
+
+    .stat-card {
+      padding: 1.2rem;
+    }
+
+    .stat-val {
+      font-size: 2.3rem;
+      color: var(--primary-light);
+      font-weight: 900;
+    }
+
+    .stat-lbl {
+      margin-top: .3rem;
+      color: var(--muted);
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .card {
+      padding: 1rem;
+      overflow: hidden;
+    }
+
+    .card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--primary-light);
+      font-size: .9rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: .8rem;
+    }
+
+    .table-wrap {
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th, td {
+      padding: .7rem .8rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      text-align: left;
+      font-size: .78rem;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: var(--surface2);
+      color: var(--primary-light);
+      font-size: .65rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      z-index: 2;
+    }
+
+    td {
+      color: var(--text);
+    }
+
+    tr:hover td {
+      background: rgba(23, 96, 191, .08);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: .18rem .45rem;
+      font-size: .68rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .ok {
+      color: var(--success);
+      border-color: rgba(78,200,122,.4);
+    }
+
+    .danger {
+      color: var(--danger);
+      border-color: rgba(217,85,85,.4);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .list {
+      display: grid;
+      gap: .45rem;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      gap: .7rem;
+      padding: .65rem .75rem;
+      background: rgba(255,255,255,.035);
+      border: 1px solid rgba(255,255,255,.06);
+      font-size: .78rem;
+    }
+
+    .search {
+      width: 100%;
+      margin-bottom: .7rem;
+      padding: .6rem .8rem;
+      background: rgba(0,0,0,.2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      outline: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      color: var(--muted);
+      font-size: .65rem;
+    }
+
+    @media (max-width: 1000px) {
+      .stat-grid, .layout, .grid-bottom {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        padding: 1rem;
+      }
+
+      .header {
+        align-items: start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <div class="brand">ARCVAULT</div>
+    <div class="nav-right">
+      <div class="user-pill" id="user-pill">ADMIN</div>
+      <button onclick="cargarTodo()">ACTUALIZAR</button>
+      <button onclick="salir()">SALIR</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="header">
+      <div>
+        <h1>PANEL DE CONTROL</h1>
+        <div class="subtitle">Monitoreo administrativo de usuarios, accesos, intentos fallidos, empresas y salas.</div>
+      </div>
+      <div class="subtitle" id="last-update">Actualizando...</div>
+    </div>
+
+    <section class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-usuarios">0</div>
+        <div class="stat-lbl">Usuarios</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-val" id="stat-accesos">0</div>
+        <div class="stat-lbl">Accesos Hoy</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-val" id="stat-fallidos">0</div>
+        <div class="stat-lbl">Intentos Fallidos</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-val" id="stat-salas">0</div>
+        <div class="stat-lbl">Salas</div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="card">
+        <div class="card-title">
+          <span>Accesos Recientes</span>
+          <span class="muted" id="count-accesos">0 registros</span>
+        </div>
+
+        <input class="search" id="buscar-accesos" placeholder="Buscar acceso por nombre, sala, cargo..." oninput="renderAccesos()">
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Cargo</th>
+                <th>Sala</th>
+                <th>Estado</th>
+                <th>Hora Entrada</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-accesos">
+              <tr><td colspan="7">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Usuarios Registrados</span>
+          <span class="muted" id="count-usuarios">0 registros</span>
+        </div>
+
+        <input class="search" id="buscar-usuarios" placeholder="Buscar usuario por nombre, cédula, cargo..." oninput="renderUsuarios()">
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Cargo</th>
+                <th>Sala Permitida</th>
+                <th>Admin</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-usuarios">
+              <tr><td colspan="6">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-bottom">
+      <div class="card">
+        <div class="card-title">
+          <span>Intentos Fallidos</span>
+          <span class="muted" id="count-fallidos">0 registros</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Empresa</th>
+                <th>Motivo</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-fallidos">
+              <tr><td colspan="5">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-title">
+            <span>Empresas</span>
+            <span class="muted" id="count-empresas">0 registros</span>
+          </div>
+          <div class="list" id="lista-empresas"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Salas del Sistema</span>
+            <span class="muted" id="count-salas">0 salas</span>
+          </div>
+          <div class="list" id="lista-salas"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>ARCVAULT © 2025 — PANEL ADMINISTRATIVO</footer>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const user = params.get("user");
+
+    if (!user) {
+      alert("Acceso no autorizado");
+      window.location.href = "/";
+    }
+
+    document.getElementById("user-pill").textContent = "ADMIN · " + user;
+
+    let usuarios = [];
+    let accesos = [];
+    let fallidos = [];
+    let empresas = [];
+    let salas = [];
+
+    function salir() {
+      window.location.href = "/";
+    }
+
+    function normalizar(txt) {
+      return String(txt || "").toLowerCase();
+    }
+
+    function fecha(valor) {
+      if (!valor) return "—";
+      return new Date(valor).toLocaleString("es-GT");
+    }
+
+    async function cargarTodo() {
+      try {
+        const [resumenRes, usuariosRes, accesosRes, fallidosRes, empresasRes, salasRes] = await Promise.all([
+          fetch("/api/dashboard/resumen"),
+          fetch("/api/dashboard/usuarios"),
+          fetch("/api/dashboard/accesos"),
+          fetch("/api/dashboard/fallidos"),
+          fetch("/api/dashboard/empresas"),
+          fetch("/api/dashboard/salas")
+        ]);
+
+        const resumen = await resumenRes.json();
+        usuarios = await usuariosRes.json();
+        accesos = await accesosRes.json();
+        fallidos = await fallidosRes.json();
+        empresas = await empresasRes.json();
+        salas = await salasRes.json();
+
+        document.getElementById("stat-usuarios").textContent = resumen.usuarios || 0;
+        document.getElementById("stat-accesos").textContent = resumen.accesosHoy || 0;
+        document.getElementById("stat-fallidos").textContent = resumen.intentosFallidos || 0;
+        document.getElementById("stat-salas").textContent = resumen.salas || 0;
+
+        renderUsuarios();
+        renderAccesos();
+        renderFallidos();
+        renderEmpresas();
+        renderSalas();
+
+        document.getElementById("last-update").textContent =
+          "Última actualización: " + new Date().toLocaleTimeString("es-GT");
+
+      } catch (err) {
+        console.error(err);
+        alert("Error cargando datos del dashboard");
+      }
+    }
+
+    function renderUsuarios() {
+      const q = normalizar(document.getElementById("buscar-usuarios").value);
+
+      const filtrados = usuarios.filter(u =>
+        normalizar(u.nombre).includes(q) ||
+        normalizar(u.cedula).includes(q) ||
+        normalizar(u.cargo).includes(q) ||
+        normalizar(u.sala_permitida).includes(q)
+      );
+
+      document.getElementById("count-usuarios").textContent = filtrados.length + " registros";
+
+      document.getElementById("tabla-usuarios").innerHTML = filtrados.length
+        ? filtrados.map(u => `
+          <tr>
+            <td>${u.id ?? "—"}</td>
+            <td>${u.nombre ?? "—"}</td>
+            <td>${u.cedula ?? "—"}</td>
+            <td>${u.cargo ?? "—"}</td>
+            <td>${u.sala_permitida ?? "—"}</td>
+            <td><span class="badge ${Number(u.fijo) === 1 ? "ok" : ""}">${Number(u.fijo) === 1 ? "Sí" : "No"}</span></td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="6">Sin usuarios</td></tr>`;
+    }
+
+    function renderAccesos() {
+      const q = normalizar(document.getElementById("buscar-accesos").value);
+
+      const filtrados = accesos.filter(a =>
+        normalizar(a.nombre).includes(q) ||
+        normalizar(a.cedula).includes(q) ||
+        normalizar(a.cargo).includes(q) ||
+        normalizar(a.ubicacion).includes(q) ||
+        normalizar(a.resultado_autenticacion).includes(q)
+      );
+
+      document.getElementById("count-accesos").textContent = filtrados.length + " registros";
+
+      document.getElementById("tabla-accesos").innerHTML = filtrados.length
+        ? filtrados.map(a => `
+          <tr>
+            <td>${a.id ?? "—"}</td>
+            <td>${a.nombre ?? "—"}</td>
+            <td>${a.cedula ?? "—"}</td>
+            <td>${a.cargo ?? "—"}</td>
+            <td>${a.ubicacion ?? "—"}</td>
+            <td><span class="badge ok">${a.resultado_autenticacion ?? "OK"}</span></td>
+            <td>${fecha(a.hora_entrada)}</td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="7">Sin accesos</td></tr>`;
+    }
+
+    function renderFallidos() {
+      document.getElementById("count-fallidos").textContent = fallidos.length + " registros";
+
+      document.getElementById("tabla-fallidos").innerHTML = fallidos.length
+        ? fallidos.map(f => `
+          <tr>
+            <td>${f.id ?? "—"}</td>
+            <td>${f.nombre ?? "—"}</td>
+            <td>${f.cedula ?? "—"}</td>
+            <td>${f.empresa_id ?? "—"}</td>
+            <td><span class="badge danger">${f.motivo ?? "Denegado"}</span></td>
+          </tr>
+        `).join("")
+        : `<tr><td colspan="5">Sin intentos fallidos</td></tr>`;
+    }
+
+    function renderEmpresas() {
+      document.getElementById("count-empresas").textContent = empresas.length + " registros";
+
+      document.getElementById("lista-empresas").innerHTML = empresas.length
+        ? empresas.map(e => `
+          <div class="list-item">
+            <span>${e.nombre}</span>
+            <span class="muted">ID ${e.id}</span>
+          </div>
+        `).join("")
+        : `<div class="list-item">Sin empresas</div>`;
+    }
+
+    function renderSalas() {
+      document.getElementById("count-salas").textContent = salas.length + " salas";
+
+      document.getElementById("lista-salas").innerHTML = salas.length
+        ? salas.map(s => `
+          <div class="list-item">
+            <span>${s}</span>
+            <span class="muted">Activa</span>
+          </div>
+        `).join("")
+        : `<div class="list-item">Sin salas</div>`;
+    }
+
+    cargarTodo();
+    setInterval(cargarTodo, 7000);
+  </script>
+</body>
+</html>
